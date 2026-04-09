@@ -8,7 +8,7 @@ export default function App() {
           <span className="text-2xl">📝</span>
           <div>
             <h1 className="text-lg font-semibold">Amazon Seller Support Case 撰寫工具</h1>
-            <p className="text-xs text-gray-400">Seller Central Case &amp; SIM Escalation</p>
+            <p className="text-xs text-gray-400">適用所有站點 · Seller Central Case &amp; SIM Escalation</p>
           </div>
         </div>
       </header>
@@ -18,7 +18,7 @@ export default function App() {
       </main>
 
       <footer className="text-center text-xs text-gray-400 py-6 border-t">
-        本工具協助賣家撰寫結構化的 Seller Support Case，產生中英文版內容。
+        本工具協助賣家撰寫結構化的 Seller Support Case，產生中英文版內容。適用於所有 Amazon 站點（US/EU/UK/JP/AU 等）。
         <br />
         也可用於內部 SIM Escalation 使用。僅供參考，請依實際情況調整內容。
         <div className="mt-4 flex flex-wrap justify-center gap-3">

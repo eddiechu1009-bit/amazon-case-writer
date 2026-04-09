@@ -77,7 +77,7 @@ export const caseCategories: CaseCategory[] = [
         labelEn: 'KYC / Identity Verification',
         helpLinks: [
           { title: 'KYC 驗證流程 - Seller Central', url: 'https://sellercentral.amazon.com/help/hub/reference/G201468460', source: 'seller-central' },
-          { title: '亞馬遜歐洲站 KYC 合規指南', url: 'https://gs.amazon.com.tw/', source: 'amazon-tw' },
+          { title: '亞馬遜 KYC 合規指南', url: 'https://gs.amazon.com.tw/', source: 'amazon-tw' },
         ],
         templateHints: {
           descriptionPrompt: '請描述驗證問題，例如：卡在哪個驗證步驟、上傳了什麼文件被拒',
@@ -228,7 +228,7 @@ export const caseCategories: CaseCategory[] = [
         labelEn: 'Product Safety Compliance Documents',
         helpLinks: [
           { title: '產品合規要求 - Seller Central', url: 'https://sellercentral.amazon.com/help/hub/reference/G521FMF7YC4YNRAX', source: 'seller-central' },
-          { title: 'EU Product Safety - CE Marking', url: 'https://sellercentral.amazon.com/help/hub/reference/G201813130', source: 'seller-central' },
+          { title: 'Product Safety - CE/UKCA/FCC Marking', url: 'https://sellercentral.amazon.com/help/hub/reference/G201813130', source: 'seller-central' },
         ],
         templateHints: {
           descriptionPrompt: '請描述合規問題，例如：需要哪些認證文件、被要求提供什麼證明',
