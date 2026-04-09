@@ -117,8 +117,41 @@ export default function CaseWriter() {
     />;
   }
 
+  // Calculate form completion
+  const formSteps = [
+    { label: '基本資訊', done: form.mcid.trim() !== '' },
+    { label: '問題分類', done: form.category !== '' && form.subcategory !== '' },
+    { label: '問題詳情', done: form.description.trim() !== '' && form.actionsTaken.trim() !== '' && form.desiredOutcome.trim() !== '' },
+  ];
+  const completedSteps = formSteps.filter(s => s.done).length;
+
   return (
     <div className="space-y-6">
+      {/* Form progress stepper */}
+      <div className="bg-white rounded-xl border p-4 animate-fadeIn">
+        <div className="flex items-center justify-between">
+          {formSteps.map((s, i) => (
+            <div key={i} className="flex items-center flex-1">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                s.done ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                {s.done ? '✓' : i + 1}
+              </div>
+              <span className={`ml-2 text-sm hidden sm:inline ${s.done ? 'text-green-700 font-medium' : 'text-gray-400'}`}>
+                {s.label}
+              </span>
+              {i < formSteps.length - 1 && (
+                <div className={`flex-1 h-0.5 mx-3 transition-all duration-500 ${
+                  s.done ? 'bg-green-400' : 'bg-gray-200'
+                }`} />
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 text-xs text-gray-400 text-center">
+          {completedSteps}/{formSteps.length} 步驟完成
+        </div>
+      </div>
       {/* 基本資訊 */}
       <Section title="基本資訊" icon="🔑">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -215,14 +248,17 @@ export default function CaseWriter() {
         <Field label="問題描述" required hint={selectedSub?.templateHints.descriptionPrompt}>
           <textarea value={form.description} onChange={e => update('description', e.target.value)}
             placeholder={selectedSub?.templateHints.descriptionPrompt ?? '請詳細描述你遇到的問題...'} rows={4} className="input-field resize-y" />
+          <div className="text-xs text-gray-400 text-right mt-1">{form.description.length} 字</div>
         </Field>
         <Field label="已採取的改善措施" required hint={selectedSub?.templateHints.actionsPrompt} className="mt-4">
           <textarea value={form.actionsTaken} onChange={e => update('actionsTaken', e.target.value)}
             placeholder={selectedSub?.templateHints.actionsPrompt ?? '請說明你已經做了哪些嘗試...'} rows={3} className="input-field resize-y" />
+          <div className="text-xs text-gray-400 text-right mt-1">{form.actionsTaken.length} 字</div>
         </Field>
         <Field label="希望得到的結果" required hint={selectedSub?.templateHints.outcomePrompt} className="mt-4">
           <textarea value={form.desiredOutcome} onChange={e => update('desiredOutcome', e.target.value)}
             placeholder={selectedSub?.templateHints.outcomePrompt ?? '請說明你期望的處理結果...'} rows={2} className="input-field resize-y" />
+          <div className="text-xs text-gray-400 text-right mt-1">{form.desiredOutcome.length} 字</div>
         </Field>
       </Section>
 
@@ -253,9 +289,12 @@ export default function CaseWriter() {
       </Section>
 
       {/* 產生按鈕 */}
-      <div className="flex justify-center pb-8">
+      <div className="flex flex-col items-center pb-8 gap-2">
         <button onClick={handleGenerate} disabled={!canGenerate || isGenerating}
-          className="px-10 py-3 bg-amazon-orange text-white font-semibold rounded-lg text-lg hover:bg-orange-500 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg">
+          className="px-10 py-3 bg-amazon-orange text-white font-semibold rounded-lg text-lg
+            hover:bg-orange-500 hover:shadow-lg hover:-translate-y-0.5
+            transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed
+            disabled:hover:translate-y-0 disabled:hover:shadow-none shadow-md">
           {isGenerating ? (
             <span className="flex items-center gap-2">
               <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
@@ -266,6 +305,9 @@ export default function CaseWriter() {
             </span>
           ) : '🚀 產生 Case 內容（含自動翻譯）'}
         </button>
+        {!canGenerate && !isGenerating && (
+          <p className="text-xs text-gray-400">請填寫所有必填欄位（標有 <span className="text-red-500">*</span> 的欄位）</p>
+        )}
       </div>
     </div>
   );
@@ -286,8 +328,8 @@ function PreviewStep({ generated, form, copyFeedback, onCopy, onExport, onBack, 
   const [tab, setTab] = useState<'zh' | 'en'>('zh');
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-green-700 to-green-600 rounded-xl p-6 text-white">
+    <div className="space-y-6 animate-fadeIn">
+      <div className="bg-gradient-to-r from-green-700 to-green-600 rounded-xl p-6 text-white shadow-lg">
         <h2 className="text-xl font-bold mb-1">✅ Case 內容已產生</h2>
         <p className="text-sm text-green-200">請檢視以下內容，中文內容已自動翻譯為英文版。可直接複製貼到 Seller Central 或匯出</p>
       </div>
@@ -332,7 +374,9 @@ function PreviewStep({ generated, form, copyFeedback, onCopy, onExport, onBack, 
             tab === 'zh' ? `${generated.zhTitle}\n\n${generated.zhBody}` : `${generated.enTitle}\n\n${generated.enBody}`,
             tab === 'zh' ? '中文版已複製' : 'English copied'
           )}
-            className="px-3 py-1.5 bg-amazon-orange text-white text-sm rounded-lg hover:bg-orange-500 transition">
+            className={`px-4 py-1.5 text-sm rounded-lg transition-all duration-200 font-medium ${
+              copyFeedback ? 'bg-green-500 text-white' : 'bg-amazon-orange text-white hover:bg-orange-500 hover:shadow-md'
+            }`}>
             {copyFeedback ? `✓ ${copyFeedback}` : '📋 複製全文'}
           </button>
         </div>
@@ -360,13 +404,13 @@ function PreviewStep({ generated, form, copyFeedback, onCopy, onExport, onBack, 
 
       {/* 操作按鈕 */}
       <div className="flex flex-wrap gap-3 justify-center pb-8">
-        <button onClick={onBack} className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">
+        <button onClick={onBack} className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
           ← 返回修改
         </button>
-        <button onClick={onExport} className="px-6 py-2.5 bg-amazon-blue text-white rounded-lg text-sm hover:bg-blue-700 transition">
+        <button onClick={onExport} className="px-6 py-2.5 bg-amazon-blue text-white rounded-lg text-sm hover:bg-blue-700 hover:shadow-md transition-all duration-200">
           {form.attachments.length > 0 ? '📥 匯出 ZIP 壓縮檔' : '📥 匯出 TXT 檔案'}
         </button>
-        <button onClick={onReset} className="px-6 py-2.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 transition">
+        <button onClick={onReset} className="px-6 py-2.5 bg-gray-600 text-white rounded-lg text-sm hover:bg-gray-700 hover:shadow-md transition-all duration-200">
           🔄 撰寫新 Case
         </button>
       </div>
@@ -377,7 +421,7 @@ function PreviewStep({ generated, form, copyFeedback, onCopy, onExport, onBack, 
 /* ── Shared UI Components ── */
 function Section({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
-    <section className="bg-white rounded-xl border p-5">
+    <section className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow duration-200 animate-fadeIn">
       <h3 className="text-base font-semibold text-amazon-dark mb-4">
         {icon && <span className="mr-1">{icon}</span>}{title}
       </h3>

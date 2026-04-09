@@ -5,15 +5,15 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-amazon-dark text-white px-4 py-3 flex items-center justify-between sticky top-0 z-50 shadow-lg">
         <div className="flex items-center gap-3">
-          <span className="text-xl">📝</span>
-          <h1 className="text-lg font-semibold">Amazon Seller Support Case 撰寫工具</h1>
-        </div>
-        <div className="text-xs text-gray-400">
-          Seller Central Case &amp; SIM Escalation
+          <span className="text-2xl">📝</span>
+          <div>
+            <h1 className="text-lg font-semibold">Amazon Seller Support Case 撰寫工具</h1>
+            <p className="text-xs text-gray-400">Seller Central Case &amp; SIM Escalation</p>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
+      <main className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <CaseWriter />
       </main>
 
