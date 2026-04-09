@@ -21,6 +21,11 @@ export default function App() {
         本工具協助賣家撰寫結構化的 Seller Support Case，產生中英文版內容。
         <br />
         也可用於內部 SIM Escalation 使用。僅供參考，請依實際情況調整內容。
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          <a href="https://eddiechu1009-bit.github.io/amazon-eu-tools/" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-gray-100 hover:bg-amazon-orange/10 hover:text-amazon-dark rounded-lg transition-all duration-200">🇪🇺 新賣家準備工具</a>
+          <a href="https://eddiechu1009-bit.github.io/amazon-eu-seller-toolkit/" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-gray-100 hover:bg-amazon-orange/10 hover:text-amazon-dark rounded-lg transition-all duration-200">🛠️ 營運工具箱</a>
+          <a href="https://eddiechu1009-bit.github.io/amazon-eu-accounting/" target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-gray-100 hover:bg-amazon-orange/10 hover:text-amazon-dark rounded-lg transition-all duration-200">📊 帳務分析工具</a>
+        </div>
       </footer>
     </div>
   );

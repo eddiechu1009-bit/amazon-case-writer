@@ -4,6 +4,76 @@ import { caseCategories } from '../data/caseCategories';
 import { generateCase, exportCase, TranslatedFields } from '../data/caseGenerator';
 import { translateFormFields } from '../data/translator';
 
+interface QuickTemplate {
+  id: string;
+  label: string;
+  icon: string;
+  category: string;
+  subcategory: string;
+  issueScope: 'account' | 'asin';
+  description: string;
+  actionsTaken: string;
+  desiredOutcome: string;
+}
+
+const quickTemplates: QuickTemplate[] = [
+  {
+    id: 'fba-lost',
+    label: 'FBA 庫存遺失求償',
+    icon: '📦',
+    category: 'fba',
+    subcategory: 'fba-lost-damaged',
+    issueScope: 'asin',
+    description: '我們發現 FBA 倉庫中有庫存遺失的情況。根據我們的出貨記錄，Shipment ID [填入 Shipment ID] 中有 [數量] 件商品在入倉後未被正確接收或已遺失。我們已核對出貨數量與 Amazon 接收數量，確認存在差異。',
+    actionsTaken: '1. 已在 Seller Central 的 Shipment 頁面確認入倉數量差異\n2. 已下載 Inventory Adjustments Report 比對\n3. 已等待超過 30 天讓系統自動調整\n4. 已準備好出貨證明文件（BOL、裝箱單）',
+    desiredOutcome: '請調查遺失的庫存並依照 FBA 庫存賠償政策進行賠償。',
+  },
+  {
+    id: 'listing-suppressed',
+    label: 'Listing 被下架申訴',
+    icon: '🚫',
+    category: 'listing',
+    subcategory: 'listing-suppressed',
+    issueScope: 'asin',
+    description: '我們的商品 ASIN [填入 ASIN] 於 [日期] 被下架/抑制。收到的通知顯示原因為 [填入原因]。此商品完全符合 Amazon 的銷售政策和產品安全要求，我們認為此下架可能是系統誤判。',
+    actionsTaken: '1. 已檢查並更新商品資訊，確保所有欄位正確\n2. 已上傳相關合規文件（如適用）\n3. 已確認商品符合品類要求\n4. 已嘗試透過 Seller Central 重新提交',
+    desiredOutcome: '請審核我們的商品資訊和提交的文件，恢復 Listing 的上架狀態。',
+  },
+  {
+    id: 'fee-overcharge',
+    label: '費用多收爭議',
+    icon: '💰',
+    category: 'payment',
+    subcategory: 'payment-fee-dispute',
+    issueScope: 'asin',
+    description: '我們發現 ASIN [填入 ASIN] 的 FBA 費用計算有誤。根據我們的實際商品尺寸和重量測量，此商品應歸類為 [正確尺寸分級]，但目前被收取 [錯誤尺寸分級] 的費用。',
+    actionsTaken: '1. 已使用精確量具重新測量商品尺寸和重量\n2. 已比對 Amazon 費用報告中的尺寸分級\n3. 已準備商品實際尺寸的照片和測量記錄\n4. 已計算多收費用的金額',
+    desiredOutcome: '請重新測量商品尺寸，更正尺寸分級，並退還多收的費用。',
+  },
+  {
+    id: 'account-verification',
+    label: 'KYC 身份驗證卡關',
+    icon: '🔐',
+    category: 'account',
+    subcategory: 'account-verification',
+    issueScope: 'account',
+    description: '我們的帳號目前卡在 KYC 身份驗證步驟，無法完成註冊流程。我們已按照要求上傳所有文件，但系統顯示 [填入錯誤訊息或狀態]。',
+    actionsTaken: '1. 已上傳營業登記證英文版（經公證翻譯）\n2. 已上傳負責人護照影本（有效期限內）\n3. 已上傳近 90 天內的銀行對帳單\n4. 已上傳公司地址證明文件\n5. 已嘗試重新上傳 [次數] 次',
+    desiredOutcome: '請審核我們提交的文件，協助完成 KYC 驗證流程，讓帳號可以正常使用。',
+  },
+  {
+    id: 'vat-upload',
+    label: 'VAT 稅號上傳問題',
+    icon: '🏛️',
+    category: 'compliance',
+    subcategory: 'compliance-vat',
+    issueScope: 'account',
+    description: '我們已取得 [國家] 的 VAT 稅號 [填入稅號]，但在 Seller Central 上傳時遇到問題。系統顯示 [填入錯誤訊息]，導致無法完成稅務設定。',
+    actionsTaken: '1. 已確認 VAT 稅號格式正確\n2. 已在 VIES 系統驗證稅號有效\n3. 已嘗試在不同瀏覽器重新上傳\n4. 已上傳稅務機關核發的 VAT 證書',
+    desiredOutcome: '請協助完成 VAT 稅號的驗證和上傳，讓我們可以在該國正常銷售。',
+  },
+];
+
 const emptyForm: CaseFormData = {
   mcid: '',
   issueScope: 'account',
@@ -152,6 +222,43 @@ export default function CaseWriter() {
           {completedSteps}/{formSteps.length} 步驟完成
         </div>
       </div>
+
+      {/* Quick Templates */}
+      {form.category === '' && (
+        <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm animate-fadeIn">
+          <h3 className="text-base font-semibold text-amazon-dark mb-3">
+            ⚡ 常用模板（一鍵填入）
+          </h3>
+          <p className="text-xs text-gray-400 mb-3">選擇常見問題模板，快速填入基本框架後再修改細節</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            {quickTemplates.map(tpl => (
+              <button
+                key={tpl.id}
+                onClick={() => {
+                  setForm(prev => ({
+                    ...prev,
+                    category: tpl.category,
+                    subcategory: tpl.subcategory,
+                    issueScope: tpl.issueScope,
+                    description: tpl.description,
+                    actionsTaken: tpl.actionsTaken,
+                    desiredOutcome: tpl.desiredOutcome,
+                  }));
+                }}
+                className="flex items-start gap-2 p-3 rounded-lg border border-gray-200 text-left
+                  hover:border-amazon-orange hover:bg-orange-50/50 hover:shadow-sm transition-all duration-200 group"
+              >
+                <span className="text-lg flex-shrink-0">{tpl.icon}</span>
+                <div className="min-w-0">
+                  <div className="text-sm font-medium text-gray-700 group-hover:text-amazon-dark">{tpl.label}</div>
+                  <div className="text-xs text-gray-400 mt-0.5 line-clamp-2">{tpl.description.slice(0, 50)}...</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 基本資訊 */}
       <Section title="基本資訊" icon="🔑">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
