@@ -252,15 +252,28 @@ export const caseCategories: CaseCategory[] = [
       },
       {
         id: 'compliance-eppr',
-        label: 'EPR / 包裝法規',
-        labelEn: 'EPR / Packaging Regulations',
+        label: 'EPR / 包裝法規（含 PPWR）',
+        labelEn: 'EPR / Packaging Regulations (incl. PPWR)',
         helpLinks: [
           { title: 'EPR 要求 - Seller Central', url: 'https://sellercentral.amazon.com/help/hub/reference/GKQM6P7BVQHMMFSC', source: 'seller-central' },
         ],
         templateHints: {
-          descriptionPrompt: '請描述 EPR 問題，例如：哪個國家的 EPR 號碼有問題、註冊狀態',
-          actionsPrompt: '請說明已採取的措施，例如：已完成 EPR 註冊、已上傳註冊號碼',
+          descriptionPrompt: '請描述 EPR 問題，例如：哪個國家的 EPR 號碼有問題、註冊狀態。若與 PPWR 有關（2026/8/12 起全面適用），請說明是包裝符合性聲明（EU Declaration of Conformity）或包裝規格問題',
+          actionsPrompt: '請說明已採取的措施，例如：已完成 EPR 註冊、已上傳註冊號碼、已備妥各包裝類型的 EU Declaration of Conformity',
           outcomePrompt: '例如：希望通過 EPR 驗證、解除銷售限制',
+        },
+      },
+      {
+        id: 'compliance-gpsr',
+        label: 'GPSR / 產品安全法規',
+        labelEn: 'GPSR / General Product Safety Regulation',
+        helpLinks: [
+          { title: 'GPSR 要求 - Seller Central', url: 'https://sellercentral-europe.amazon.com/help/hub/reference/GKAYGH3A6AK84BEX', source: 'seller-central' },
+        ],
+        templateHints: {
+          descriptionPrompt: '請描述 GPSR 問題，例如：被要求補上歐盟責任人（Responsible Person）資訊、商品因缺 GPSR 資料被下架、審核中被要求重新提交',
+          actionsPrompt: '請說明已採取的措施，例如：已指定歐盟境內 Responsible Person、已上傳產品安全資訊與警告標示、已在包裝標示代理人資訊',
+          outcomePrompt: '例如：希望完成 GPSR 審核、恢復商品可售狀態',
         },
       },
     ],
