@@ -35,7 +35,11 @@ const quickTemplates: QuickTemplate[] = [
     category: 'listing',
     subcategory: 'listing-suppressed',
     issueScope: 'asin',
-    description: '我們的商品 ASIN [填入 ASIN] 於 [日期] 被下架/抑制。收到的通知顯示原因為 [填入原因]。此商品完全符合 Amazon 的銷售政策和產品安全要求，我們認為此下架可能是系統誤判。',
+    // 句子刻意寫短、主詞明確：翻譯 API 遇到「收到的通知」會把主客體顛倒
+    // （變成 Amazon 收到通知），而「此下架」會因詞典替換成 deactivated 而變成
+    // "this deactivated item may be a misjudgment"。用「我們收到的績效通知」與
+    // 「我們認為此判定可能有誤」可避開這兩個坑。
+    description: '我們的商品 ASIN [填入 ASIN] 於 [日期] 被下架/抑制。我們收到的績效通知列出的原因為 [填入原因]。此商品完全符合 Amazon 的銷售政策和產品安全要求，我們認為此判定可能有誤。',
     actionsTaken: '1. 已檢查並更新商品資訊，確保所有欄位正確\n2. 已上傳相關合規文件（如適用）\n3. 已確認商品符合品類要求\n4. 已嘗試透過 Seller Central 重新提交',
     desiredOutcome: '請審核我們的商品資訊和提交的文件，恢復 Listing 的上架狀態。',
   },
@@ -93,6 +97,8 @@ export default function CaseWriter() {
   const [step, setStep] = useState<'form' | 'preview'>('form');
   const [copyFeedback, setCopyFeedback] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  // 選了分類後模板區塊會收起來；讓使用者能再打開，否則選錯分類就找不到模板入口
+  const [showTemplates, setShowTemplates] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const update = useCallback(<K extends keyof CaseFormData>(key: K, val: CaseFormData[K]) => {
@@ -195,6 +201,15 @@ export default function CaseWriter() {
   ];
   const completedSteps = formSteps.filter(s => s.done).length;
 
+  // 偵測「內文還是別的模板的原文，但分類已被改掉」的情況。
+  // 使用者若照這樣送出，Case 的分類與內容會對不起來，Seller Support 容易直接退。
+  const activeTemplate = quickTemplates.find(t => t.description === form.description);
+  const templateMismatch =
+    activeTemplate !== undefined &&
+    form.category !== '' &&
+    (activeTemplate.category !== form.category ||
+      (form.subcategory !== '' && activeTemplate.subcategory !== form.subcategory));
+
   return (
     <div className="space-y-6">
       {/* Form progress stepper */}
@@ -223,8 +238,26 @@ export default function CaseWriter() {
         </div>
       </div>
 
+      {/* 分類與內文對不起來時提醒 */}
+      {templateMismatch && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 animate-fadeIn">
+          <p className="text-sm text-amber-900 font-medium">
+            提醒：下方「問題詳情」還是「{activeTemplate?.label}」模板的原文，但你已改成其他分類。
+          </p>
+          <p className="text-xs text-amber-700 mt-1">
+            分類與內容不一致的 Case 常被退回。請改寫問題詳情，或改用符合這個分類的模板。
+          </p>
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="mt-2 text-xs font-medium text-amber-900 underline hover:no-underline"
+          >
+            重新選擇模板
+          </button>
+        </div>
+      )}
+
       {/* Quick Templates */}
-      {form.category === '' && (
+      {(form.category === '' || showTemplates) && (
         <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm animate-fadeIn">
           <h3 className="text-base font-semibold text-amazon-dark mb-3">
             ⚡ 常用模板（一鍵填入）
@@ -244,6 +277,7 @@ export default function CaseWriter() {
                     actionsTaken: tpl.actionsTaken,
                     desiredOutcome: tpl.desiredOutcome,
                   }));
+                  setShowTemplates(false);
                 }}
                 className="flex items-start gap-2 p-3 rounded-lg border border-gray-200 text-left
                   hover:border-amazon-orange hover:bg-orange-50/50 hover:shadow-sm transition-all duration-200 group"
@@ -298,11 +332,24 @@ export default function CaseWriter() {
 
       {/* 問題分類 */}
       <Section title="問題分類" icon="📂">
+        {form.category !== '' && !showTemplates && (
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="mb-3 text-xs text-gray-500 hover:text-amazon-orange underline hover:no-underline"
+          >
+            ⚡ 改用常用模板
+          </button>
+        )}
         <Field label="選擇問題類別" required>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
             {caseCategories.map(cat => (
               <button key={cat.id}
-                onClick={() => { update('category', cat.id); update('subcategory', ''); }}
+                onClick={() => {
+                  // 只切分類，不動已填的內文 —— 使用者可能只是想改分類。
+                  // 但若內文還是套模板來的原文，會提示他去對齊（見下方 templateMismatch 提示）。
+                  update('category', cat.id);
+                  update('subcategory', '');
+                }}
                 className={`p-3 rounded-lg border text-left transition text-sm ${
                   form.category === cat.id
                     ? 'border-amazon-orange bg-orange-50 ring-1 ring-amazon-orange'
